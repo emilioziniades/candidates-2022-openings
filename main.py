@@ -18,17 +18,11 @@ COLOURS = {
 
 def main() -> None:
     games = load_games()
+    df = prepare_df(games)
 
-    df = pd.DataFrame()
-    df["result"] = [parse_result(game.headers["Result"]) for game in games]
-    df["first_move"] = [game.next().san() for game in games]
-    df["opening"] = [game.headers["Opening"] for game in games]
-    df["opening_category"] = df["opening"].map(parse_opening_category)
-    from IPython import embed; embed(colors='neutral')  # fmt: skip
-
-    # plot_first_moves(df)
+    plot_first_moves(df)
     plot_opening_categories(df)
-    # plot_opening_performance()
+    plot_opening_performance()
 
 
 def plot_first_moves(df: pd.DataFrame) -> None:
@@ -82,36 +76,6 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
     plt.xticks(rotation=90)
     plt.tight_layout()
     plt.show()
-
-
-def parse_result(result: str) -> int:
-    results = {
-        "1-0": 1,
-        "1/2-1/2": 0,
-        "0-1": -1,
-    }
-    return results[result]
-
-
-def parse_opening_category(opening: str) -> str:
-    if match := re.search(r"(.*):", opening):
-        return match.group(1)
-    else:
-        return opening
-
-
-def count_opening_categories(openings: Counter) -> Counter:
-    opening_categories = []
-    for opening in openings:
-        if match := re.search(r"(.*):", opening):
-            opening_categories.append(match.group(1))
-        else:
-            opening_categories.append(opening)
-    return Counter(opening_categories)
-
-
-def count_opening_performance(games: Games, openings: Counter) -> Counter:
-    openings = count_opening_categories(openings).keys()
 
 
 def plot_opening_performance() -> None:
@@ -168,6 +132,28 @@ def load_games() -> Games:
     assert len(games) == 56
 
     return games
+
+
+def prepare_df(games: Games) -> pd.DataFrame:
+    def parse_result(result: str) -> int:
+        results = {
+            "1-0": 1,
+            "1/2-1/2": 0,
+            "0-1": -1,
+        }
+        return results[result]
+
+    def parse_opening_category(opening: str) -> str:
+        match = re.search(r"(.*):", opening)
+        return match.group(1) if match else opening
+
+    df = pd.DataFrame()
+    df["result"] = [parse_result(game.headers["Result"]) for game in games]
+    df["first_move"] = [game.next().san() for game in games]
+    df["opening"] = [game.headers["Opening"] for game in games]
+    df["opening_category"] = df["opening"].map(parse_opening_category)
+
+    return df
 
 
 if __name__ == "__main__":
