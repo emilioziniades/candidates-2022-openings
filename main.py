@@ -14,37 +14,32 @@ COLOURS = {
     "e4": "#F3A712",
     "Nf3": "#CC001B",
 }
-RESULTS = {
-    "1-0": 1,
-    "1/2-1/2": 0,
-    "0-1": -1,
-}
 
 
 def main() -> None:
     games = load_games()
-    openings = Counter(game.headers["Opening"] for game in games)
 
     df = pd.DataFrame()
+    df["result"] = [parse_result(game.headers["Result"]) for game in games]
+    df["first_move"] = [game.next().san() for game in games]
     df["opening"] = [game.headers["Opening"] for game in games]
-    df["result"] = [RESULTS[game.headers["Result"]] for game in games]
     df["opening_category"] = df["opening"].map(parse_opening_category)
     from IPython import embed; embed(colors='neutral')  # fmt: skip
 
-    # plot_first_moves(games)
-    plot_opening_categories(openings)
-    plot_opening_performance()
+    # plot_first_moves(df)
+    plot_opening_categories(df)
+    # plot_opening_performance()
 
 
-def plot_first_moves(games: Games) -> None:
-    first_moves = Counter(game.next().san() for game in games)
+def plot_first_moves(df: pd.DataFrame) -> None:
+    first_moves = df["first_move"].value_counts().to_dict()
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
     plt.bar(first_move, freq, color=colours)
     plt.show()
 
 
-def plot_opening_categories(openings: Counter) -> None:
+def plot_opening_categories(df: pd.DataFrame) -> None:
     first_move_to_opening = {
         "c4": [
             "English Opening",
@@ -74,8 +69,7 @@ def plot_opening_categories(openings: Counter) -> None:
         for opening in openings
     }
 
-    opening_categories = count_opening_categories(openings)
-    from IPython import embed; embed(colors='neutral')  # fmt: skip
+    opening_categories = df["opening_category"].value_counts().to_dict()
 
     opening_categories = sorted(
         opening_categories.items(),
@@ -88,6 +82,15 @@ def plot_opening_categories(openings: Counter) -> None:
     plt.xticks(rotation=90)
     plt.tight_layout()
     plt.show()
+
+
+def parse_result(result: str) -> int:
+    results = {
+        "1-0": 1,
+        "1/2-1/2": 0,
+        "0-1": -1,
+    }
+    return results[result]
 
 
 def parse_opening_category(opening: str) -> str:
