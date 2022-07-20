@@ -63,12 +63,33 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
     plt.show()
 
 
-def plot_opening_performance() -> None:
-    category_names = ["White win", "Draw", "Black win"]
+def plot_opening_performance(df: pd.DataFrame) -> None:
+    category_names = ["white_win", "draw", "black_win"]
+
+    # test results
     results = {
         "QGD": [30, 20, 50],
         "Ruy Lopez": [50, 30, 20],
     }
+
+    # real results
+    perf_df = df.groupby(["opening_category"]).sum().drop(columns=["result"])
+    perf_df["total"] = perf_df[["white_win", "draw", "black_win"]].sum(axis=1)
+    for res in category_names:
+        perf_df[f"{res}_percent"] = perf_df[res] / perf_df["total"] * 100
+    results = perf_df.drop(
+        [
+            "white_win",
+            "draw",
+            "black_win",
+            "total",
+        ],
+        axis=1,
+    ).to_dict("index")
+    results = {
+        opening: list(percentages.values()) for opening, percentages in results.items()
+    }
+
     labels = list(results.keys())
     data = np.array(list(results.values()))
     data_cum = data.cumsum(axis=1)
@@ -83,11 +104,12 @@ def plot_opening_performance() -> None:
         widths = data[:, i]
         starts = data_cum[:, i] - widths
         rects = ax.barh(
-            labels, widths, left=starts, color=colour, label=colname, height=0.3
+            labels, widths, left=starts, color=colour, label=colname, height=0.7
         )
         text_colour = "black" if colour == "#FFFFFF" else "white"
         ax.bar_label(rects, label_type="center", color=text_colour, fmt="%d%%")
 
     ax.set_yticks(labels)
 
+    plt.tight_layout()
     plt.show()

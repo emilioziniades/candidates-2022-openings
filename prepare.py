@@ -55,6 +55,9 @@ def prepare_df(games: Games) -> pd.DataFrame:
 
     df = pd.DataFrame()
     df["result"] = [parse_result(game.headers["Result"]) for game in games]
+    df["white_win"] = (df["result"] == 1).astype(int)
+    df["draw"] = (df["result"] == 0).astype(int)
+    df["black_win"] = (df["result"] == -1).astype(int)
     df["first_move"] = [game.next().san() for game in games]
     df["opening"] = [game.headers["Opening"] for game in games]
     df["opening_category"] = df["opening"].map(parse_opening_category)

@@ -7,7 +7,7 @@ def main() -> None:
 
     plot_first_moves(df)
     plot_opening_categories(df)
-    plot_opening_performance()
+    plot_opening_performance(df)
 
 
 if __name__ == "__main__":
