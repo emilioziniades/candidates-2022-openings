@@ -15,7 +15,7 @@ def plot_first_moves(df: pd.DataFrame) -> None:
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
     fig, ax = plt.subplots()
-    rects = plt.bar(first_move, freq, color=colours)
+    rects = plt.bar(first_move, freq, width=2, color=colours)
     ax.bar_label(rects, padding=3)
     ax.set_title("First moves by frequency")
     ax.set_xlabel("First move")
@@ -23,6 +23,7 @@ def plot_first_moves(df: pd.DataFrame) -> None:
     ax.set_aspect(1)
     plt.tight_layout()
     plt.show()
+    fig.savefig("first_moves.png")
 
 
 def plot_opening_categories(df: pd.DataFrame) -> None:
@@ -71,8 +72,9 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
     ax.set_ylabel("Frequency")
     ax.set_xlabel("Opening category")
     ax.set_title("Opening categories by frequency, grouped by first move")
+    ax.set_ylim(0, max(freq) + 2)
     plt.tight_layout()
-    plt.show()
+    fig.savefig("opening_categories.png")
 
 
 def plot_opening_performance(df: pd.DataFrame) -> None:
@@ -101,27 +103,45 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
     results = {
         opening: list(percentages.values()) for opening, percentages in results.items()
     }
+    results = dict(sorted(results.items(), key=lambda p: p[1]))
 
     labels = list(results.keys())
+    labels = [rf"{i} ($\bf{df['opening_category'].value_counts()[i]}$)" for i in labels]
     data = np.array(list(results.values()))
     data_cum = data.cumsum(axis=1)
     colours = ["#FFFFFF", "#BABABA", "#000000"]
-    bg_colour = "#FCEAC5"
 
-    fig, ax = plt.subplots(facecolor=bg_colour)
+    fig, ax = plt.subplots()
     ax.xaxis.set_visible(False)
-    ax.set_facecolor(bg_colour)
     ax.set_xlim(0, 100)
     for i, (colour, colname) in enumerate(zip(colours, category_names)):
         widths = data[:, i]
         starts = data_cum[:, i] - widths
         rects = ax.barh(
-            labels, widths, left=starts, color=colour, label=colname, height=0.7
+            labels,
+            widths,
+            left=starts,
+            color=colour,
+            label=colname.replace("_", " ").capitalize(),
+            height=0.7,
+            edgecolor="black",
         )
         text_colour = "black" if colour == "#FFFFFF" else "white"
-        ax.bar_label(rects, label_type="center", color=text_colour, fmt="%d%%")
+        bar_labels = [f"{j:.1f}%" if j != 0 else "" for j in data[:, i]]
+        ax.bar_label(rects, labels=bar_labels, label_type="center", color=text_colour)
 
+    ax.set_title("Opening category (number of games) performance", loc="center", pad=30)
+    ax.legend(
+        ncol=len(category_names),
+        bbox_to_anchor=(0, 1),
+        loc="lower left",
+        fontsize="small",
+    )
     ax.set_yticks(labels)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["left"].set_visible(False)
 
     plt.tight_layout()
-    plt.show()
+    fig.savefig("opening_performance.png")
