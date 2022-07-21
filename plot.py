@@ -14,7 +14,14 @@ def plot_first_moves(df: pd.DataFrame) -> None:
     first_moves = df["first_move"].value_counts().to_dict()
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
-    plt.bar(first_move, freq, color=colours)
+    fig, ax = plt.subplots()
+    rects = plt.bar(first_move, freq, color=colours)
+    ax.bar_label(rects, padding=3)
+    ax.set_title("First moves by frequency")
+    ax.set_xlabel("First move")
+    ax.set_ylabel("Frequency")
+    ax.set_aspect(1)
+    plt.tight_layout()
     plt.show()
 
 
@@ -57,8 +64,13 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
     opening_cat, freq = zip(*opening_categories)
     colours = [COLOURS[opening_to_first_move[i]] for i in opening_cat]
 
-    plt.bar(opening_cat, freq, color=colours)
-    plt.xticks(rotation=90)
+    fig, ax = plt.subplots()
+    rects = ax.bar(opening_cat, freq, color=colours)
+    ax.bar_label(rects)
+    ax.tick_params(rotation=90)
+    ax.set_ylabel("Frequency")
+    ax.set_xlabel("Opening category")
+    ax.set_title("Opening categories by frequency, grouped by first move")
     plt.tight_layout()
     plt.show()
 
