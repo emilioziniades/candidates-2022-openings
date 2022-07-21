@@ -15,7 +15,7 @@ def plot_first_moves(df: pd.DataFrame) -> None:
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
     fig, ax = plt.subplots()
-    rects = plt.bar(first_move, freq, width=2, color=colours)
+    rects = plt.bar(first_move, freq, color=colours)
     ax.bar_label(rects, padding=3)
     ax.set_title("First moves by frequency")
     ax.set_xlabel("First move")
