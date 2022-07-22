@@ -15,15 +15,14 @@ def plot_first_moves(df: pd.DataFrame) -> None:
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
     fig, ax = plt.subplots()
-    rects = plt.bar(first_move, freq, color=colours)
+    rects = ax.bar(first_move, freq, color=colours)
     ax.bar_label(rects, padding=3)
     ax.set_title("First moves by frequency")
     ax.set_xlabel("First move")
     ax.set_ylabel("Frequency")
-    ax.set_aspect(1)
+    ax.set_ylim(0, max(freq) + 4)
     plt.tight_layout()
-    plt.show()
-    fig.savefig("first_moves.png")
+    fig.savefig("figures/first_moves.png", dpi=300)
 
 
 def plot_opening_categories(df: pd.DataFrame) -> None:
@@ -74,7 +73,7 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
     ax.set_title("Opening categories by frequency, grouped by first move")
     ax.set_ylim(0, max(freq) + 2)
     plt.tight_layout()
-    fig.savefig("opening_categories.png")
+    fig.savefig("figures/opening_categories.png", dpi=300)
 
 
 def plot_opening_performance(df: pd.DataFrame) -> None:
@@ -103,13 +102,17 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
     results = {
         opening: list(percentages.values()) for opening, percentages in results.items()
     }
-    results = dict(sorted(results.items(), key=lambda p: p[1]))
+    results = dict(
+        sorted(
+            results.items(), key=lambda p: df["opening_category"].value_counts()[p[0]]
+        )
+    )
 
     labels = list(results.keys())
     labels = [rf"{i} ($\bf{df['opening_category'].value_counts()[i]}$)" for i in labels]
     data = np.array(list(results.values()))
     data_cum = data.cumsum(axis=1)
-    colours = ["#FFFFFF", "#BABABA", "#000000"]
+    colours = ["#FFFFFF", "#767676", "#000000"]
 
     fig, ax = plt.subplots()
     ax.xaxis.set_visible(False)
@@ -130,7 +133,7 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
         bar_labels = [f"{j:.1f}%" if j != 0 else "" for j in data[:, i]]
         ax.bar_label(rects, labels=bar_labels, label_type="center", color=text_colour)
 
-    ax.set_title("Opening category (number of games) performance", loc="center", pad=30)
+    ax.set_title("Opening performance (number of games)", loc="left", pad=30)
     ax.legend(
         ncol=len(category_names),
         bbox_to_anchor=(0, 1),
@@ -144,4 +147,4 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
     ax.spines["left"].set_visible(False)
 
     plt.tight_layout()
-    fig.savefig("opening_performance.png")
+    fig.savefig("figures/opening_performance.png", dpi=300)

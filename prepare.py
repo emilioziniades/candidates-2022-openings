@@ -16,7 +16,7 @@ def load_data() -> pd.DataFrame:
 
 def load_games() -> Games:
     games = []
-    with open("./candidates_2022_all_games.pgn", "r") as all_games_pgn:
+    with open("./data/candidates_2022_all_games.pgn", "r") as all_games_pgn:
         while True:
             game = chess.pgn.read_game(all_games_pgn)
             if game is None:
