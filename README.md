@@ -30,7 +30,7 @@ Local usage is straightforward. Clone the repository, install dependencies in a 
 $ git clone https://github.com/emilioziniades/candidates-2022-openings/
 $ cd candidates-2022-openings
 $ python -m venv venv
-$ source menv/bin/activate
+$ source venv/bin/activate
 $ pip install -r requirements.txt
 $ python src/main.py
 ```
