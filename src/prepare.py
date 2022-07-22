@@ -9,19 +9,20 @@ Games = list[chess.pgn.Game]
 
 
 def load_data() -> pd.DataFrame:
-    games = load_games()
+    games_file = "./data/candidates_2022_all_games.pgn"
+    games = load_games(games_file)
     df = prepare_df(games)
     return df
 
 
-def load_games() -> Games:
+def load_games(filename: str) -> Games:
     games = []
-    with open("./data/candidates_2022_all_games.pgn", "r") as all_games_pgn:
+    with open(filename, "r") as all_games_pgn:
         while True:
             game = chess.pgn.read_game(all_games_pgn)
             if game is None:
                 break
-            # ensure player names are consistent
+            # ensure player names are consistent: Ziniades, Emilio -> Emilio Ziniades
             for colour in ["White", "Black"]:
                 player = game.headers[colour]
                 if match := re.search(r"(.+), (.+)", player):
