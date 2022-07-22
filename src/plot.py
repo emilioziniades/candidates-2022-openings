@@ -2,14 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from util import OpeningToFirstMove
-
-COLOURS = {
-    "c4": "#114B5F",
-    "d4": "#317B22",
-    "e4": "#F3A712",
-    "Nf3": "#CC001B",
-}
+from util import OpeningToFirstMove, COLOURS
 
 
 def plot_first_moves(df: pd.DataFrame) -> None:
@@ -79,7 +72,7 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
     labels = [label(i) for i in results.keys()]
     data = np.array(list(results.values()))
     data_cum = data.cumsum(axis=1)
-    colours = ["#FFFFFF", "#767676", "#000000"]
+    colours = [COLOURS[i] for i in possible_results]
 
     fig, ax = plt.subplots()
     for i, (colour, result) in enumerate(zip(colours, possible_results)):

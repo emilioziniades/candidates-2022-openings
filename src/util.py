@@ -1,3 +1,14 @@
+COLOURS = {
+    "c4": "#114B5F",
+    "d4": "#317B22",
+    "e4": "#F3A712",
+    "Nf3": "#CC001B",
+    "white_win": "#FFFFFF",
+    "draw": "#767676",
+    "black_win": "#000000",
+}
+
+
 class OpeningToFirstMove:
     def __init__(self):
         self.first_move_to_opening = {
