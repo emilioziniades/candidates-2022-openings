@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from util import OpeningToFirstMove
+
 COLOURS = {
     "c4": "#114B5F",
     "d4": "#317B22",
@@ -14,6 +16,7 @@ def plot_first_moves(df: pd.DataFrame) -> None:
     first_moves = df["first_move"].value_counts().to_dict()
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
+
     fig, ax = plt.subplots()
     rects = ax.bar(first_move, freq, color=colours)
     ax.bar_label(rects, padding=3)
@@ -26,40 +29,17 @@ def plot_first_moves(df: pd.DataFrame) -> None:
 
 
 def plot_opening_categories(df: pd.DataFrame) -> None:
-    first_move_to_opening = {
-        "c4": [
-            "English Opening",
-        ],
-        "d4": [
-            "Queen's Gambit Declined",
-            "Grünfeld Defense",
-            "Catalan Opening",
-            "Nimzo-Indian Defense",
-            "Semi-Slav Defense",
-            "Tarrasch Defense",
-        ],
-        "e4": [
-            "Sicilian Defense",
-            "Ruy Lopez",
-            "Italian Game",
-            "Russian Game",
-            "Four Knights Game",
-        ],
-        "Nf3": [
-            "King's Indian Attack",
-        ],
-    }
-    opening_to_first_move = {
-        opening: move
-        for move, openings in first_move_to_opening.items()
-        for opening in openings
-    }
+    opening_to_first_move = OpeningToFirstMove()
+
+    def sort_by_first_move_and_frequency(opening):
+        name, freq = opening
+        first_move = opening_to_first_move[name]
+        return first_move.lower(), 1 / freq
 
     opening_categories = df["opening_category"].value_counts().to_dict()
-
     opening_categories = sorted(
         opening_categories.items(),
-        key=lambda x: (opening_to_first_move[x[0]].lower(), 1 / x[1]),
+        key=sort_by_first_move_and_frequency,
     )
     opening_cat, freq = zip(*opening_categories)
     colours = [COLOURS[opening_to_first_move[i]] for i in opening_cat]
