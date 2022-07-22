@@ -57,47 +57,33 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
 
 
 def plot_opening_performance(df: pd.DataFrame) -> None:
-    category_names = ["white_win", "draw", "black_win"]
-
-    # test results
-    results = {
-        "QGD": [30, 20, 50],
-        "Ruy Lopez": [50, 30, 20],
-    }
-
-    # real results
-    perf_df = df.groupby(["opening_category"]).sum().drop(columns=["result"])
-    perf_df["total"] = perf_df[["white_win", "draw", "black_win"]].sum(axis=1)
-    for res in category_names:
+    possible_results = ["white_win", "draw", "black_win"]
+    perf_df = df.groupby(["opening_category"]).sum()
+    perf_df["total"] = perf_df[possible_results].sum(axis=1)
+    for res in possible_results:
         perf_df[f"{res}_percent"] = perf_df[res] / perf_df["total"] * 100
-    results = perf_df.drop(
-        [
-            "white_win",
-            "draw",
-            "black_win",
-            "total",
-        ],
-        axis=1,
-    ).to_dict("index")
+    perf_df.drop(possible_results, axis=1, inplace=True)
+    perf_df.drop(["total", "result"], axis=1, inplace=True)
+    results = perf_df.to_dict("index")
     results = {
         opening: list(percentages.values()) for opening, percentages in results.items()
     }
     results = dict(
         sorted(
-            results.items(), key=lambda p: df["opening_category"].value_counts()[p[0]]
+            results.items(),
+            key=lambda p: df["opening_category"].value_counts()[p[0]],
         )
     )
 
-    labels = list(results.keys())
-    labels = [rf"{i} ($\bf{df['opening_category'].value_counts()[i]}$)" for i in labels]
+    label = lambda i: rf"{i} ($\bf{df['opening_category'].value_counts()[i]}$)"
+    labels = [label(i) for i in results.keys()]
     data = np.array(list(results.values()))
     data_cum = data.cumsum(axis=1)
     colours = ["#FFFFFF", "#767676", "#000000"]
 
     fig, ax = plt.subplots()
-    ax.xaxis.set_visible(False)
-    ax.set_xlim(0, 100)
-    for i, (colour, colname) in enumerate(zip(colours, category_names)):
+    for i, (colour, result) in enumerate(zip(colours, possible_results)):
+        pretty_result = result.replace("_", " ").capitalize()
         widths = data[:, i]
         starts = data_cum[:, i] - widths
         rects = ax.barh(
@@ -105,26 +91,32 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
             widths,
             left=starts,
             color=colour,
-            label=colname.replace("_", " ").capitalize(),
+            label=pretty_result,
             height=0.7,
             edgecolor="black",
         )
         text_colour = "black" if colour == "#FFFFFF" else "white"
         bar_labels = [f"{j:.1f}%" if j != 0 else "" for j in data[:, i]]
-        ax.bar_label(rects, labels=bar_labels, label_type="center", color=text_colour)
+        ax.bar_label(
+            rects,
+            labels=bar_labels,
+            label_type="center",
+            color=text_colour,
+        )
 
     ax.set_title("Opening performance (number of games)", loc="left", pad=30)
     ax.legend(
-        ncol=len(category_names),
+        ncol=len(possible_results),
         bbox_to_anchor=(0, 1),
         loc="lower left",
         fontsize="small",
     )
     ax.set_yticks(labels)
+    ax.xaxis.set_visible(False)
+    ax.set_xlim(0, 100)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.spines["left"].set_visible(False)
-
     plt.tight_layout()
     fig.savefig("figures/opening_performance.png", dpi=300)
