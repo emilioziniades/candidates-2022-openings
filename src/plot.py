@@ -1,3 +1,4 @@
+from typing import Callable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -6,10 +7,12 @@ from util import OPENING_TO_FIRST_MOVE, COLOURS
 
 
 def plot_first_moves(df: pd.DataFrame) -> None:
+    # count first first moves
     first_moves = df["first_move"].value_counts().to_dict()
     first_move, freq = zip(*sorted(first_moves.items(), key=lambda x: x[0].lower()))
     colours = [COLOURS[i] for i in first_move]
 
+    # plot bar chart
     fig, ax = plt.subplots()
     rects = ax.bar(first_move, freq, color=colours)
     ax.bar_label(rects, padding=3)
@@ -22,19 +25,21 @@ def plot_first_moves(df: pd.DataFrame) -> None:
 
 
 def plot_opening_categories(df: pd.DataFrame) -> None:
-    def sort_by_first_move_and_frequency(opening):
+    def first_move_and_inverse_frequency(opening: tuple[str, int]) -> tuple[str, float]:
         name, freq = opening
         first_move = OPENING_TO_FIRST_MOVE[name]
         return first_move.lower(), 1 / freq
 
+    # count opening categories and sort by (first_move, inverse_frequency)
     opening_categories = df["opening_category"].value_counts().to_dict()
     opening_categories = sorted(
         opening_categories.items(),
-        key=sort_by_first_move_and_frequency,
+        key=first_move_and_inverse_frequency,
     )
     opening_cat, freq = zip(*opening_categories)
     colours = [COLOURS[OPENING_TO_FIRST_MOVE[i]] for i in opening_cat]
 
+    # plot bar chart
     fig, ax = plt.subplots()
     rects = ax.bar(opening_cat, freq, color=colours)
     ax.bar_label(rects)
@@ -75,8 +80,12 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
     )
 
     # generate labels of the form: Opening (n_games)
-    label = lambda x, f: rf"{x} ($\bf{f(x)}$)"
-    lookup_value_count = lambda x: df["opening_category"].value_counts()[x]
+    def label(x: str, f: Callable[[str], int]) -> str:
+        return rf"{x} ($\bf{f(x)}$)"
+
+    def lookup_value_count(x: str) -> int:
+        return df["opening_category"].value_counts()[x]
+
     labels = [label(i, lookup_value_count) for i in results.keys()]
 
     # convert results into array
