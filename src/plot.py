@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from util import OpeningToFirstMove, COLOURS
+from util import OPENING_TO_FIRST_MOVE, COLOURS
 
 
 def plot_first_moves(df: pd.DataFrame) -> None:
@@ -22,11 +22,9 @@ def plot_first_moves(df: pd.DataFrame) -> None:
 
 
 def plot_opening_categories(df: pd.DataFrame) -> None:
-    opening_to_first_move = OpeningToFirstMove()
-
     def sort_by_first_move_and_frequency(opening):
         name, freq = opening
-        first_move = opening_to_first_move[name]
+        first_move = OPENING_TO_FIRST_MOVE[name]
         return first_move.lower(), 1 / freq
 
     opening_categories = df["opening_category"].value_counts().to_dict()
@@ -35,7 +33,7 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
         key=sort_by_first_move_and_frequency,
     )
     opening_cat, freq = zip(*opening_categories)
-    colours = [COLOURS[opening_to_first_move[i]] for i in opening_cat]
+    colours = [COLOURS[OPENING_TO_FIRST_MOVE[i]] for i in opening_cat]
 
     fig, ax = plt.subplots()
     rects = ax.bar(opening_cat, freq, color=colours)
@@ -68,7 +66,7 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
         )
     )
 
-    label = lambda i: rf"{i} ($\bf{df['opening_category'].value_counts()[i]}$)"
+    label = lambda x: rf"{x} ($\bf{df['opening_category'].value_counts()[x]}$)"
     labels = [label(i) for i in results.keys()]
     data = np.array(list(results.values()))
     data_cum = data.cumsum(axis=1)
