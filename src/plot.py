@@ -48,9 +48,17 @@ def plot_opening_categories(df: pd.DataFrame) -> None:
 
 
 def plot_opening_performance(df: pd.DataFrame) -> None:
+
+    # determine number of white win/draw/black win results for each opening
     possible_results = ["white_win", "draw", "black_win"]
     perf_df = df.groupby(["opening_category"]).sum()
     perf_df["total"] = perf_df[possible_results].sum(axis=1)
+
+    # stash totals for later
+    total_row = perf_df.sum().drop(["result", "total"])
+    total_games = total_row.sum()
+
+    # calculate white win/draw/black win percentages
     for res in possible_results:
         perf_df[f"{res}_percent"] = perf_df[res] / perf_df["total"] * 100
     perf_df.drop(possible_results, axis=1, inplace=True)
@@ -66,12 +74,23 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
         )
     )
 
-    label = lambda x: rf"{x} ($\bf{df['opening_category'].value_counts()[x]}$)"
-    labels = [label(i) for i in results.keys()]
+    # generate labels of the form: Opening (n_games)
+    label = lambda x, f: rf"{x} ($\bf{f(x)}$)"
+    lookup_value_count = lambda x: df["opening_category"].value_counts()[x]
+    labels = [label(i, lookup_value_count) for i in results.keys()]
+
+    # convert results into array
     data = np.array(list(results.values()))
+
+    # insert overall white/black/draw performance into labels and data
+    total_row = total_row / total_row.sum() * 100
+    labels.insert(0, label("Total", lambda _: total_games))
+    data = np.vstack([total_row.tolist(), data])
+
     data_cum = data.cumsum(axis=1)
     colours = [COLOURS[i] for i in possible_results]
 
+    # make hbars
     fig, ax = plt.subplots()
     for i, (colour, result) in enumerate(zip(colours, possible_results)):
         pretty_result = result.replace("_", " ").capitalize()
@@ -95,6 +114,7 @@ def plot_opening_performance(df: pd.DataFrame) -> None:
             color=text_colour,
         )
 
+    # customize appearance
     ax.set_title("Opening performance (number of games)", loc="left", pad=30)
     ax.legend(
         ncol=len(possible_results),
