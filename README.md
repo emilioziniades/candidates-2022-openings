@@ -1,6 +1,6 @@
 # Candidates 2022: Opening Analysis
 
-Investigation into the most common openings used in the FIDE Candidates 2022, and how well they performed. Full write-up [here](https://emilio.co.za/candidates-2022).
+Investigation into the most common openings used in the FIDE Candidates 2022, and how well they performed. Full write-up [here](https://emilio.co.za/write/candidates-2022).
 
 <img src="./figures/opening_performance.png" alt="Opening performance" />
 
